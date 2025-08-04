@@ -1,0 +1,31 @@
+name: comunicador_ca
+description: "Projecte Flutter sobre un comunicador fent ús de pictogrames de CAA."
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  js_interop: ^0.0.1
+  http: ^1.4.0
+  provider: ^6.0.0
+  flutter_lints: ^6.0.0
+  flutter_tts: ^4.2.3
+  desktop_window: ^0.4.2
+  cached_network_image: ^3.3.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/meusPictogrames/
