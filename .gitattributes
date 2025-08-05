@@ -1,40 +1,30 @@
-* text=auto 
-*.dart text eol=lf 
-*.png binary 
-*.jpg binary 
-*.jpeg binary 
-*.gif binary 
-*.ico binary 
-*.ttf binary 
-*.otf binary 
-*.woff binary 
-*.woff2 binary 
-*.mp3 binary 
-*.mp4 binary 
-*.mov binary 
-*.avi binary 
-*.dll binary 
-*.exe binary 
-*.zip binary 
-*.rar binary 
-*.tar binary 
-*.gz binary 
-*.sqlite binary 
-*.db binary 
-*.bin binary 
-*.dat binary 
-*.apk binary 
-*.aab binary 
-*.ipa binary 
-*.aar binary 
-*.pom binary 
-*.jar binary 
-*.class binary 
-*.dex binary 
-*.so binary 
-*.o binary 
-*.obj binary 
-*.lo binary 
-*.la binary 
-*.pyc binary 
-*.lock binary 
+# Detecta automàticament fitxers de text i normalitza a LF
+* text=auto
+
+# Força LF per a fitxers de text comuns en Flutter/Dart
+*.dart text
+*.gradle text
+*.html text
+*.java text
+*.json text
+*.md text
+*.py text
+*.sh text
+*.txt text
+*.xml text
+*.yaml text
+
+# Força CRLF per a fitxers específics de Windows
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.rc text eol=crlf
+*.sln text eol=crlf
+*.props text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+
+# No normalitza binaris
+*.ico binary
+*.jar binary
+*.png binary
+*.zip binarys
