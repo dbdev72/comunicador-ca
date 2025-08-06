@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class ActivitatsFestes extends StatelessWidget {
-  ActivitatsFestes({Key? key}) : super(key: key);
+class ActivitatsFestes extends StatefulWidget {
+  const ActivitatsFestes({Key? key}) : super(key: key);
+
+  @override
+  _ActivitatsFestesState createState() => _ActivitatsFestesState();
+}
+
+class _ActivitatsFestesState extends State<ActivitatsFestes> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 11251, 'text': 'ENCÀRREC'},
@@ -25,6 +34,7 @@ class ActivitatsFestes extends StatelessWidget {
     {'id': 3092, 'text': 'NADAL', 'navega': Nadal()},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -38,11 +48,15 @@ class ActivitatsFestes extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() {
+                _isFullScreen = !_isFullScreen;
+              });
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

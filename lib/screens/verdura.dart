@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Verdura extends StatelessWidget {
-  Verdura({Key? key}) : super(key: key);
+class Verdura extends StatefulWidget {
+  const Verdura({Key? key}) : super(key: key);
+
+  @override
+  State<Verdura> createState() => _VerduraState();
+}
+
+class _VerduraState extends State<Verdura> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 8104, 'text': 'ENSALADILLA'},
@@ -25,6 +34,7 @@ class Verdura extends StatelessWidget {
     {}
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -41,11 +51,13 @@ class Verdura extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Beguda extends StatelessWidget {
-  Beguda({Key? key}) : super(key: key);
+class Beguda extends StatefulWidget {
+  const Beguda({Key? key}) : super(key: key);
+
+  @override
+  _BegudaState createState() => _BegudaState();
+}
+
+class _BegudaState extends State<Beguda> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 2248, 'text': 'AIGUA'},
@@ -13,11 +22,12 @@ class Beguda extends StatelessWidget {
     {'id': 4940, 'text': 'COLA-CAO'},
     {'text': 'CACAOLAT', 'localImage': 'assets/meusPictogrames/cacaolat.png'},
     {'id': 2445, 'text': 'LLET'},
-    {'text': 'FANTA',  'localImage': 'assets/meusPictogrames/fanta.png'},
+    {'text': 'FANTA', 'localImage': 'assets/meusPictogrames/fanta.png'},
     {'id': 2338, 'text': 'COCA-COLA'},
     {},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -34,11 +44,15 @@ class Beguda extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() {
+                _isFullScreen = !_isFullScreen;
+              });
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

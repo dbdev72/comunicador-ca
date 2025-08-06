@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Espai extends StatelessWidget {
-  Espai({Key? key}) : super(key: key);
+class Espai extends StatefulWidget {
+  const Espai({Key? key}) : super(key: key);
+
+  @override
+  _EspaiState createState() => _EspaiState();
+}
+
+class _EspaiState extends State<Espai> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'text': 'ESQUERRA', 'localImage': 'assets/meusPictogrames/esquerra.png'},
@@ -13,6 +22,7 @@ class Espai extends StatelessWidget {
     {'text': 'DRETA', 'localImage': 'assets/meusPictogrames/dreta.png'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -29,11 +39,13 @@ class Espai extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
@@ -49,10 +61,6 @@ class Espai extends StatelessWidget {
                 itemCount: pictogramesData.length,
                 itemBuilder: (context, index) {
                   final catData = pictogramesData[index];
-
-                  if (catData.isEmpty || catData['text'] == null) {
-                    return const SizedBox.shrink();
-                  }
 
                   final Pictograma currentPictogram = Pictograma(
                     id: catData['id'],

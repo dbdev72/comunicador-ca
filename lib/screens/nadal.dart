@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Nadal extends StatelessWidget {
-  Nadal({Key? key}) : super(key: key);
+class Nadal extends StatefulWidget {
+  const Nadal({Key? key}) : super(key: key);
+
+  @override
+  State<Nadal> createState() => _NadalState();
+}
+
+class _NadalState extends State<Nadal> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 3058, 'text': 'ARBRE DE NADAL'},
@@ -25,6 +34,7 @@ class Nadal extends StatelessWidget {
     {'id': 5565, 'text': 'TORTELL DE REIS'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -41,11 +51,13 @@ class Nadal extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Expressions extends StatelessWidget {
-  Expressions({Key? key}) : super(key: key);
+class Expressions extends StatefulWidget {
+  const Expressions({Key? key}) : super(key: key);
+
+  @override
+  _ExpressionsState createState() => _ExpressionsState();
+}
+
+class _ExpressionsState extends State<Expressions> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 6009, 'text': 'HOLA'},
@@ -27,6 +36,7 @@ class Expressions extends StatelessWidget {
 
   final Set<String> senseTextVisible = {'SÍ', 'NO'};
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -43,11 +53,13 @@ class Expressions extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
@@ -77,6 +89,7 @@ class Expressions extends StatelessWidget {
                   return PictogramButton(
                     pictogram: currentPictogram,
                     buttonColor: buttonBgColor,
+                    showText: !senseTextVisible.contains(currentPictogram.text),
                     onTap: () {
                       fraseModel.addWord(currentPictogram);
                     },

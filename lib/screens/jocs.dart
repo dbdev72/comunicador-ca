@@ -3,11 +3,20 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Jocs extends StatelessWidget {
-  Jocs({Key? key}) : super(key: key);
+class Jocs extends StatefulWidget {
+  const Jocs({Key? key}) : super(key: key);
 
-  final List<Map<String, dynamic>> pictogramesData = [
+  @override
+  State<Jocs> createState() => _JocsState();
+}
+
+class _JocsState extends State<Jocs> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
+
+  static const _games = [
     {},
     {},
     {},
@@ -28,11 +37,17 @@ class Jocs extends StatelessWidget {
     {'text': 'PUZZLE', 'localImage': 'assets/meusPictogrames/puzzle.png'},
   ];
 
+  static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 6,
+    childAspectRatio: 1,
+    crossAxisSpacing: 8,
+    mainAxisSpacing: 8,
+  );
+
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
-
-    const Color buttonBgColor = Colors.white;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F4E5),
@@ -44,43 +59,38 @@ class Jocs extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  childAspectRatio: 1,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: pictogramesData.length,
+                gridDelegate: _gridDelegate,
+                itemCount: _games.length,
                 itemBuilder: (context, index) {
-                  final catData = pictogramesData[index];
+                  final game = _games[index];
 
-                  if (catData.isEmpty || catData['text'] == null) {
+                  if (game.isEmpty || game['text'] == null) {
                     return const SizedBox.shrink();
                   }
 
-                  final Pictograma currentPictogram = Pictograma(
-                    id: catData['id'],
-                    text: catData['text']!,
-                    localImage: catData['localImage'],
+                  final pictogram = Pictograma(
+                    id: game['id'],
+                    text: game['text']!,
+                    localImage: game['localImage'],
                   );
 
                   return PictogramButton(
-                    pictogram: currentPictogram,
-                    buttonColor: buttonBgColor,
-                    onTap: () {
-                      fraseModel.addWord(currentPictogram);
-                    },
+                    pictogram: pictogram,
+                    buttonColor: Colors.white,
+                    onTap: () => fraseModel.addWord(pictogram),
                   );
                 },
               ),

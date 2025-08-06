@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class StJoan extends StatelessWidget {
-  StJoan({Key? key}) : super(key: key);
+class StJoan extends StatefulWidget {
+  const StJoan({Key? key}) : super(key: key);
+
+  @override
+  State<StJoan> createState() => _StJoanState();
+}
+
+class _StJoanState extends State<StJoan> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 4664, 'text': 'FOGUERA'},
@@ -16,6 +25,7 @@ class StJoan extends StatelessWidget {
     {'text': 'L\'OU COM BALLA', 'localImage': 'assets/meusPictogrames/ouBalla.png'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -32,11 +42,13 @@ class StJoan extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

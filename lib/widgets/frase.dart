@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/full_screen/full_screen.dart';
 import '../exports.dart';
 
 class Frase extends StatefulWidget {
@@ -9,6 +10,7 @@ class Frase extends StatefulWidget {
   final VoidCallback onDeleteLast;
   final VoidCallback onClearAll;
   final VoidCallback onPlaySentence;
+  final bool isFullScreen;
 
   const Frase({
     Key? key,
@@ -19,21 +21,23 @@ class Frase extends StatefulWidget {
     required this.onDeleteLast,
     required this.onClearAll,
     required this.onPlaySentence,
+    required this.isFullScreen,
   }) : super(key: key);
 
+  @override
   _FraseState createState() => _FraseState();
 }
 
 class _FraseState extends State<Frase> {
-
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      constraints: const BoxConstraints(minHeight: 120),
       decoration: BoxDecoration(
         color: Colors.grey[200],
         border: Border(bottom: BorderSide(color: Colors.grey[400]!)),
       ),
-      constraints: const BoxConstraints(minHeight: 120),
       child: Row(
         children: [
           IconButton(
@@ -59,7 +63,6 @@ class _FraseState extends State<Frase> {
                   if (pictograma.text == ' ') {
                     return const SizedBox(width: 30);
                   }
-
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: Column(
@@ -76,7 +79,7 @@ class _FraseState extends State<Frase> {
                                 )
                               : pictograma.id != null
                                   ? Image.network(
-                                      pictograma.imageUrl ?? 'https://placehold.co/60x60/FF0000/FFFFFF?text=NoImg', // Fallback per si imageUrl és null
+                                      pictograma.imageUrl ?? 'https://placehold.co/60x60/FF0000/FFFFFF?text=NoImg',
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, url, error) => const Icon(Icons.error),
                                     )

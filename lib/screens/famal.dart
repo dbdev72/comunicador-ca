@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class FaMal extends StatelessWidget {
-  FaMal({Key? key}) : super(key: key);
+class FaMal extends StatefulWidget {
+  const FaMal({Key? key}) : super(key: key);
+
+  @override
+  _FaMalState createState() => _FaMalState();
+}
+
+class _FaMalState extends State<FaMal> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 28785, 'text': 'MAL D\'ESQUENA'},
@@ -20,6 +29,7 @@ class FaMal extends StatelessWidget {
     {'text': 'MAL AL FER PIPÍ', 'localImage': 'assets/meusPictogrames/malFerPipi.png'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -36,11 +46,13 @@ class FaMal extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
@@ -56,10 +68,6 @@ class FaMal extends StatelessWidget {
                 itemCount: pictogramesData.length,
                 itemBuilder: (context, index) {
                   final catData = pictogramesData[index];
-
-                  if (catData.isEmpty || catData['text'] == null) {
-                    return const SizedBox.shrink();
-                  }
 
                   final Pictograma currentPictogram = Pictograma(
                     id: catData['id'],

@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Fruita extends StatelessWidget {
-  Fruita({Key? key}) : super(key: key);
+class Fruita extends StatefulWidget {
+  const Fruita({Key? key}) : super(key: key);
+
+  @override
+  _FruitaState createState() => _FruitaState();
+}
+
+class _FruitaState extends State<Fruita> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 9054, 'text': 'PLÀTAN'},
@@ -22,6 +31,7 @@ class Fruita extends StatelessWidget {
     {'id': 8620, 'text': 'MACEDÒNIA'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -38,11 +48,13 @@ class Fruita extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

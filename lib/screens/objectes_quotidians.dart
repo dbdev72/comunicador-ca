@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class ObjectesQuotidians extends StatelessWidget {
-  ObjectesQuotidians({Key? key}) : super(key: key);
+class ObjectesQuotidians extends StatefulWidget {
+  const ObjectesQuotidians({Key? key}) : super(key: key);
+
+  @override
+  State<ObjectesQuotidians> createState() => _ObjectesQuotidiansState();
+}
+
+class _ObjectesQuotidiansState extends State<ObjectesQuotidians> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 7107, 'text': 'FOTO'},
@@ -32,6 +41,7 @@ class ObjectesQuotidians extends StatelessWidget {
     },
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -48,11 +58,13 @@ class ObjectesQuotidians extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

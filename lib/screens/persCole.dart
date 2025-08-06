@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class PersonesCole extends StatelessWidget {
-  PersonesCole({Key? key}) : super(key: key);
+class PersonesCole extends StatefulWidget {
+  const PersonesCole({Key? key}) : super(key: key);
+
+  @override
+  State<PersonesCole> createState() => _PersonesColeState();
+}
+
+class _PersonesColeState extends State<PersonesCole> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'text': 'CARLES', 'localImage': 'assets/meusPictogrames/carles.jpg'},
@@ -17,6 +26,7 @@ class PersonesCole extends StatelessWidget {
     {'text': 'MARC', 'localImage': 'assets/meusPictogrames/parking.png'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -33,11 +43,13 @@ class PersonesCole extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

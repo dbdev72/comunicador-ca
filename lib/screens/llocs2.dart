@@ -3,11 +3,20 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Llocs2 extends StatelessWidget {
-  Llocs2({Key? key}) : super(key: key);
+class Llocs2 extends StatefulWidget {
+  const Llocs2({Key? key}) : super(key: key);
 
-  final List<Map<String, dynamic>> pictogramesData = [
+  @override
+  State<Llocs2> createState() => _Llocs2State();
+}
+
+class _Llocs2State extends State<Llocs2> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
+
+  final List<Map<String, dynamic>> _locations = [
     {'id': 3099, 'text': 'ESTACIÓ DE TREN'},
     {'id': 2472, 'text': 'METRO'},
     {'id': 2260, 'text': 'ASCENSOR'},
@@ -31,11 +40,17 @@ class Llocs2 extends StatelessWidget {
     {'id': 36291, 'text': 'ESTACIÓ AUTOBÚS'},
   ];
 
+  static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 6,
+    childAspectRatio: .8,
+    crossAxisSpacing: 8,
+    mainAxisSpacing: 8,
+  );
+
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
-
-    const Color buttonBgColor = Colors.white;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F4E5),
@@ -47,43 +62,38 @@ class Llocs2 extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  childAspectRatio: .8,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: pictogramesData.length,
+                gridDelegate: _gridDelegate,
+                itemCount: _locations.length,
                 itemBuilder: (context, index) {
-                  final catData = pictogramesData[index];
+                  final location = _locations[index];
 
-                  if (catData.isEmpty || catData['text'] == null) {
+                  if (location.isEmpty || location['text'] == null) {
                     return const SizedBox.shrink();
                   }
 
-                  final Pictograma currentPictogram = Pictograma(
-                    id: catData['id'],
-                    text: catData['text']!,
-                    localImage: catData['localImage'],
+                  final pictogram = Pictograma(
+                    id: location['id'],
+                    text: location['text']!,
+                    localImage: location['localImage'],
                   );
 
                   return PictogramButton(
-                    pictogram: currentPictogram,
-                    buttonColor: buttonBgColor,
-                    onTap: () {
-                      fraseModel.addWord(currentPictogram);
-                    },
+                    pictogram: pictogram,
+                    buttonColor: Colors.white,
+                    onTap: () => fraseModel.addWord(pictogram),
                   );
                 },
               ),

@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Dolc extends StatelessWidget {
-  Dolc({Key? key}) : super(key: key);
+class Dolc extends StatefulWidget {
+  const Dolc({Key? key}) : super(key: key);
+
+  @override
+  _DolcState createState() => _DolcState();
+}
+
+class _DolcState extends State<Dolc> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 6644, 'text': 'NATILLES'},
@@ -27,6 +36,7 @@ class Dolc extends StatelessWidget {
     {'text': 'MATÓ', 'localImage': 'assets/meusPictogrames/mato.png'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -43,11 +53,13 @@ class Dolc extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

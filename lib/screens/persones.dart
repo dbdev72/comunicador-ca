@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class Persones extends StatelessWidget {
-  Persones({Key? key}) : super(key: key);
+class Persones extends StatefulWidget {
+  const Persones({Key? key}) : super(key: key);
+
+  @override
+  State<Persones> createState() => _PersonesState();
+}
+
+class _PersonesState extends State<Persones> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 2617, 'text': 'JO'},
@@ -39,6 +48,7 @@ class Persones extends StatelessWidget {
     },
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -54,11 +64,13 @@ class Persones extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
@@ -88,7 +100,7 @@ class Persones extends StatelessWidget {
                   if (catData.containsKey('navega')) {
                     return PictogramButton(
                       pictogram: currentPictogram,
-                      buttonColor: catData['color'] as Color? ?? colorPictos, // Usa el color del mapa si existeix, sinó el color per defecte de la pantalla
+                      buttonColor: catData['color'] as Color? ?? colorPictos,
                       onTap: () {
                         Navigator.push(
                           context,

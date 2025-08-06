@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class AparellsMobles extends StatelessWidget {
-  AparellsMobles({Key? key}) : super(key: key);
+class AparellsMobles extends StatefulWidget {
+  const AparellsMobles({Key? key}) : super(key: key);
+
+  @override
+  _AparellsMoblesState createState() => _AparellsMoblesState();
+}
+
+class _AparellsMoblesState extends State<AparellsMobles> {
+  bool _isFullScreen = false;
+  final FullScreenService _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 2611, 'text': 'FINESTRA'},
@@ -28,6 +37,7 @@ class AparellsMobles extends StatelessWidget {
     {'id': 8202, 'text': 'PROJECTOR'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -44,11 +54,15 @@ class AparellsMobles extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() {
+                _isFullScreen = !_isFullScreen;
+              });
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(

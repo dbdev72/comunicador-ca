@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import '../exports.dart';
 import '../models/pictograma.dart';
 import '../widgets/pictogram_button.dart';
+import '../services/full_screen/full_screen.dart';
 
-class CosHigieneSalut extends StatelessWidget {
-  CosHigieneSalut({Key? key}) : super(key: key);
+class CosHigieneSalut extends StatefulWidget {
+  const CosHigieneSalut({Key? key}) : super(key: key);
+
+  @override
+  _CosHigieneSalutState createState() => _CosHigieneSalutState();
+}
+
+class _CosHigieneSalutState extends State<CosHigieneSalut> {
+  bool _isFullScreen = false;
+  final _fullScreenService = FullScreenService();
 
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 2737, 'text': 'DENTS'},
@@ -32,6 +41,7 @@ class CosHigieneSalut extends StatelessWidget {
     {'id': 36761, 'text': 'GEL'},
   ];
 
+  @override
   Widget build(BuildContext context) {
     final fraseModel = context.watch<FraseModel>();
     final frasePictogrames = fraseModel.frase;
@@ -47,11 +57,13 @@ class CosHigieneSalut extends StatelessWidget {
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
             onDeleteLast: () => context.read<FraseModel>().deleteLast(),
             onClearAll: () => context.read<FraseModel>().clearAll(),
+            isFullScreen: _isFullScreen,
             onPlaySentence: () async {
               await TTSService().speak(fraseModel.sentenceText);
             },
             onFullScreenPressed: () async {
-              await FullScreenService().enableFullScreen();
+              setState(() => _isFullScreen = !_isFullScreen);
+              await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
           Expanded(
