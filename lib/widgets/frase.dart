@@ -24,12 +24,11 @@ class Frase extends StatefulWidget {
     required this.isFullScreen,
   }) : super(key: key);
 
-  @override
   _FraseState createState() => _FraseState();
 }
 
 class _FraseState extends State<Frase> {
-  @override
+
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
