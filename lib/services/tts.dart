@@ -24,47 +24,61 @@ class TTSService {
   }
 
   Future<void> initTTS() async {
-    List<dynamic> voices = [];
-    if (kIsWeb) {
-      voices = await _loadVoicesWithRetry();
-    } else {
-      voices = await _flutterTts.getVoices;
-    }
+  List<dynamic> veus = [];
 
-    print("Veus disponibles:");
-    voices.forEach((v) => print(v));
+  if (kIsWeb) {
+    veus = await _loadVoicesWithRetry();
+  } else {
+    veus = await _flutterTts.getVoices;
+  }
 
-    final herenaVoice = voices.firstWhere(
-      (voice) {
-        final name = (voice['name'] ?? '').toString().toLowerCase();
-        final locale = (voice['locale'] ?? voice['lang'] ?? '').toString().toLowerCase();
-        return locale == 'ca-es' && name.contains('herena');
+  print("Veus disponibles:");
+  veus.forEach((v) => print(v));
+
+  final veuCatalana = veus.firstWhere(
+    (veu) {
+      final nom = (veu['name'] ?? '').toString().toLowerCase();
+      final localitzacio = (veu['locale'] ?? veu['lang'] ?? '').toString().toLowerCase();
+      return localitzacio == 'ca-es';
+    },
+    orElse: () => null,
+  );
+
+  if (veuCatalana != null) {
+    print("Veu catalana trobada: ${veuCatalana['name']}");
+    await _flutterTts.setVoice({
+      'name': veuCatalana['name'],
+      'locale': veuCatalana['locale'] ?? veuCatalana['lang'],
+    });
+    await _flutterTts.setLanguage("ca-ES");
+  }
+  else {
+    final veuEspanola = veus.firstWhere(
+      (veu) {
+        final nom = (veu['name'] ?? '').toString().toLowerCase();
+        final localitzacio = (veu['locale'] ?? veu['lang'] ?? '').toString().toLowerCase();
+        return localitzacio == 'es-es' && nom.contains('google');
       },
       orElse: () => null,
     );
 
-    if (herenaVoice != null) {
-      _isCatalanAvailable = true;
-      print("Veu catalana trobada: ${herenaVoice['name']}");
+    if (veuEspanola != null) {
+      print("No hi ha veu catalana, utilitzant veu espanyola de Google: ${veuEspanola['name']}");
       await _flutterTts.setVoice({
-        'name': herenaVoice['name'],
-        'locale': herenaVoice['locale'] ?? herenaVoice['lang'],
+        'name': veuEspanola['name'],
+        'locale': veuEspanola['locale'] ?? veuEspanola['lang'],
       });
-      await _flutterTts.setLanguage("ca-ES");
+      await _flutterTts.setLanguage("es-ES");
     } else {
-      _isCatalanAvailable = await _flutterTts.isLanguageAvailable("ca-ES");
-      if (_isCatalanAvailable) {
-        print("Idioma català disponible però veu específica no trobada. S'utilitza idioma ca-ES.");
-        await _flutterTts.setLanguage("ca-ES");
-      } else {
-        print("La veu catalana no està disponible. Utilitzant l'idioma per defecte.");
-      }
+      print("No s'ha trobat veu catalana ni espanyola, s'utilitzarà la veu per defecte.");
     }
-
-    await _flutterTts.setSpeechRate(0.6);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
   }
+
+  await _flutterTts.setSpeechRate(0.6);
+  await _flutterTts.setVolume(1.0);
+  await _flutterTts.setPitch(1.0);
+}
+
 
   Future<void> speak(String text) async {
     await _flutterTts.speak(text);
