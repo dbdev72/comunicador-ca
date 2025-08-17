@@ -43,3 +43,4 @@ export 'services/full_screen/full_screen_stub.dart';
 export 'widgets/frase.dart';
 export 'widgets/mespictos.dart';
 export 'widgets/pictogram_button.dart';
+export 'widgets/frase_textual.dart';

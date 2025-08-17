@@ -17,6 +17,9 @@ class _TeclatState extends State<Teclat> {
   bool _isFullScreen = false;
   final FullScreenService _fullScreenService = FullScreenService();
 
+  // Buffer per acumular les lletres de la paraula actual
+  String _currentWord = "";
+
   final List<Map<String, dynamic>> pictogramesData = [
     {'id': 2627, 'text': '1'},
     {'id': 2628, 'text': '2'},
@@ -30,7 +33,6 @@ class _TeclatState extends State<Teclat> {
     {'id': 2626, 'text': '0'},
     {'id': 3418, 'text': '?'},
     {'id': 3417, 'text': '!'},
-
     {'id': 3146, 'text': 'Q'},
     {'id': 3167, 'text': 'W'},
     {'id': 3096, 'text': 'E'},
@@ -43,7 +45,6 @@ class _TeclatState extends State<Teclat> {
     {'id': 3137, 'text': 'P'},
     {'id': 3415, 'text': '¿'},
     {'id': 3414, 'text': '¡'},
-
     {'id': 3049, 'text': 'A'},
     {'id': 3152, 'text': 'S'},
     {'id': 3088, 'text': 'D'},
@@ -56,7 +57,6 @@ class _TeclatState extends State<Teclat> {
     {'id': 29078, 'text': 'Ç'},
     {'id': 5095, 'text': '#'},
     {'id': 3200, 'text': '-'},
-
     {},
     {'id': 3173, 'text': 'Z'},
     {'id': 3168, 'text': 'X'},
@@ -81,21 +81,36 @@ class _TeclatState extends State<Teclat> {
     return Scaffold(
       body: Column(
         children: [
-          Frase(
-            sentenceWords: frasePictogrames,
+          // Usem el nou widget personalitzat de frase textual que mostra el text ampliat i sense pictogrames
+          FraseTextual(
+            fraseConfirmada: fraseModel.sentenceText,
+            paraulaEnCurs: _currentWord,
             onPopPressed: () => Navigator.pop(context),
             onHomePressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-            onDeleteLast: () => context.read<FraseModel>().deleteLast(),
-            onClearAll: () => context.read<FraseModel>().clearAll(),
+            onDeleteLast: () {
+              if (_currentWord.isNotEmpty) {
+                setState(() {
+                  _currentWord = _currentWord.substring(0, _currentWord.length - 1);
+                });
+              } else {
+                context.read<FraseModel>().deleteLast();
+              }
+            },
+            onClearAll: () {
+              setState(() => _currentWord = "");
+              context.read<FraseModel>().clearAll();
+            },
             isFullScreen: _isFullScreen,
             onPlaySentence: () async {
-              await TTSService().speak(fraseModel.sentenceText);
+              await TTSService().speak(fraseModel.sentenceText + " " + _currentWord);
             },
             onFullScreenPressed: () async {
               setState(() => _isFullScreen = !_isFullScreen);
               await _fullScreenService.toggleFullScreen(_isFullScreen);
             },
           ),
+
+          // Grid de tecles amb pictogrames
           Expanded(
             flex: 6,
             child: Padding(
@@ -110,7 +125,6 @@ class _TeclatState extends State<Teclat> {
                 itemCount: pictogramesData.length,
                 itemBuilder: (context, index) {
                   final catData = pictogramesData[index];
-
                   if (catData.isEmpty) {
                     return const CeldaBuida();
                   }
@@ -118,30 +132,40 @@ class _TeclatState extends State<Teclat> {
                   final Pictograma currentPictogram = Pictograma(
                     id: catData['id'],
                     text: catData['text']!,
-                    localImage: catData['localImage'],
                   );
 
                   return PictogramButton(
                     pictogram: currentPictogram,
                     buttonColor: buttonBgColor,
                     showText: false,
-                    onTap: () => fraseModel.addWord(currentPictogram),
+                    onTap: () {
+                      setState(() {
+                        _currentWord += currentPictogram.text;
+                      });
+                    },
                   );
                 },
               ),
             ),
           ),
+
+          // Barra inferior amb botons: copiar, espai, borrar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: SizedBox(
               height: 110,
               child: Row(
                 children: [
+                  // Botó copiar frase
                   Expanded(
                     flex: 1,
                     child: InkWell(
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: fraseModel.sentenceText));
+                        Clipboard.setData(
+                          ClipboardData(
+                            text: fraseModel.sentenceText + " " + _currentWord,
+                          ),
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Frase copiada!')),
                         );
@@ -155,18 +179,24 @@ class _TeclatState extends State<Teclat> {
                         child: Image.asset(
                           'assets/meusPictogrames/copy.png',
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.error),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
                         ),
                       ),
                     ),
                   ),
+
+                  // Botó espai: valida paraula completa
                   Expanded(
                     flex: 10,
                     child: GestureDetector(
                       onTap: () {
                         SystemSound.play(SystemSoundType.click);
-                        fraseModel.addWord(Pictograma(text: ' '));
+                        if (_currentWord.isNotEmpty) {
+                          fraseModel.addWord(Pictograma(text: _currentWord));
+                          setState(() {
+                            _currentWord = "";
+                          });
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -178,11 +208,19 @@ class _TeclatState extends State<Teclat> {
                       ),
                     ),
                   ),
+
+                  // Botó esborrar: elimina lletra o paraula
                   Expanded(
                     flex: 1,
                     child: InkWell(
                       onTap: () {
-                        fraseModel.deleteLast();
+                        if (_currentWord.isNotEmpty) {
+                          setState(() {
+                            _currentWord = _currentWord.substring(0, _currentWord.length - 1);
+                          });
+                        } else {
+                          fraseModel.deleteLast();
+                        }
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -193,8 +231,7 @@ class _TeclatState extends State<Teclat> {
                         child: Image.asset(
                           'assets/meusPictogrames/undo.png',
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.error),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
                         ),
                       ),
                     ),
