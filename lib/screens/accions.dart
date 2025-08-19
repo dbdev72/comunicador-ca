@@ -17,7 +17,7 @@ class _AccionsState extends State<Accions> {
   final FullScreenService _fullScreenService = FullScreenService();
 
   List<Map<String, dynamic>> get pictogramesData => [
-    {'text': 'VOLER', 'localImage': 'assets/meusPictogrames/voler.png'},
+    {'text': 'VULL', 'localImage': 'assets/meusPictogrames/voler.png'},
     {'text': 'ANAR', 'localImage': 'assets/meusPictogrames/anar.png'},
     {'id': 19524, 'text': 'AJUDAR'},
     {'id': 28429, 'text': 'S\'HA ACABAT'},
